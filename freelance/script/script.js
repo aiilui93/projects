@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });*/
 
         //TODO: переписать через filter
-        const filteredItems = Array.from(formCustomer.elements)
+        const filteredItems = [...formCustomer.elements]
             .filter((elem) => (elem.tagName === 'INPUT' && elem.type !== 'radio') ||
                 (elem.type === 'radio' && elem.checked) || 
                 elem.tagName === 'TEXTAREA');
