@@ -10,8 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
             formCustomer = document.getElementById('form-customer'),
             ordersTable = document.getElementById('orders'),
             modalOrder = document.getElementById('order_read'),
-            modalOrderActive = document.getElementById('order_active'),
-            modalClose = document.querySelector('.close')
+            modalOrderActive = document.getElementById('order_active')
             ;
 
     const orders = [];
@@ -33,44 +32,63 @@ document.addEventListener('DOMContentLoaded', () => {
 
     }
 
+    const handlerModal = (event) => {
+        const target = event.target;
+        const modal = target.closest('.order-modal')
+        const order = orders[modal.id]
+        console.log(target)
+
+        if (target.closest('.close') || target === modal) {
+            modal.style.display = 'none'
+        }
+
+        if(target.classList.contains('get-order')){
+            order.active = true;
+            modal.style.display = 'none'
+        }
+
+        
+    }
+
     const openModal = (numberOrder) => {
         
         const order = orders[numberOrder]
-        const modal = order.active ? modalOrderActive : modalOrder;
 
-        const firstNameBlock = document.querySelector('.firstName'),
-            modalTitleBlock = document.querySelector('.modal-title'),
-            emailBlock = document.querySelector('.email'),
-            descriptionBlock = document.querySelector('.description'),
-            deadlineBlock = document.querySelector('.deadline'),
-            currencyBlock = document.querySelector('.currency_img'),
-            countBlock = document.querySelector('.count'),
-            phoneBlock = document.querySelector('.phone');
+        const { title, firstName, email, phone, description, 
+            amount, currency, deadline, active = false } = order;
 
-            modalTitleBlock.textContent = order.title;
-            phoneBlock.setAttribute('href', 'tel:' + order.phone);
-            emailBlock.setAttribute('href', 'mailto:' + order.email);
-            emailBlock.textContent = order.email;
-            countBlock.textContent = order.amount;
-            firstNameBlock.textContent = order.firstName;
-            descriptionBlock.textContent = order.description;
-            deadlineBlock.textContent = order.deadline;
-            currencyBlock.classList.add(order.currency);
-            
+        const modal = active ? modalOrderActive : modalOrder;
 
-            modal.style.display = 'block';
-            console.log(order)
+            console.log(title, firstName, email, phone, description, 
+                amount, currency, deadline, active )
+
+        const firstNameBlock = modal.querySelector('.firstName'),
+            modalTitleBlock = modal.querySelector('.modal-title'),
+            emailBlock = modal.querySelector('.email'),
+            descriptionBlock = modal.querySelector('.description'),
+            deadlineBlock = modal.querySelector('.deadline'),
+            currencyBlock = modal.querySelector('.currency_img'),
+            countBlock = modal.querySelector('.count'),
+            phoneBlock = modal.querySelector('.phone');
+
+        modal.id = numberOrder;
+        modalTitleBlock.textContent = title;
+        phoneBlock ?  phoneBlock.href = 'tel:' + phone : '';
+        emailBlock.setAttribute('href', 'mailto:' + email);
+        emailBlock.textContent = email;
+        countBlock.textContent = amount;
+        firstNameBlock.textContent = firstName;
+        descriptionBlock.textContent = description;
+        deadlineBlock.textContent = deadline;
+        currencyBlock.className = 'currency_img';
+        currencyBlock.classList.add(currency);
+
+
+        modal.style.display = 'flex';
+        console.log(order)
+
+        modal.addEventListener('click', handlerModal);
     }
-
-    const closeModal = (modal) => {
-        modal.style.display = 'none';
-    }
-
-
-    modalClose.addEventListener('click', (event) => {
-        const modal = event.target.closest('.modal');
-        closeModal(modal);
-    })
 
     ordersTable.addEventListener('click', (event) => {
         const target = event.target;
