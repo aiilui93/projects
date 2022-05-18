@@ -13,24 +13,46 @@ document.addEventListener('DOMContentLoaded', () => {
             modalOrderActive = document.getElementById('order_active')
             ;
 
-    const orders = [];
+    const orders = JSON.parse(localStorage.getItem('freeOrders')) || [];
+    console.log(orders);
+    const toStorage = () => {
+        localStorage.setItem('freeOrders', JSON.stringify(orders))
+    };
+
+    const declOfNum = (number, titles) => {  
+        const cases = [2, 0, 1, 1, 1, 2];  
+        return titles[ (number%100>4 && number%100<20)? 2 : cases[(number%10<5)?number%10:5] ];  
+    }
+    
+
+    const calcDeadline = (deadline) => {
+        const date = new Date(deadline),
+            today = new Date(),
+            days = (date - today) / 86400000,
+            hours = Math.floor((days % 1) * 24),
+            daysText = declOfNum(Math.trunc(days), ['день', 'дня', 'дней']),
+            hoursText = declOfNum(hours, ['час', 'часа', 'часов']);
+
+        return Math.trunc(days) + ' ' + daysText  + ' ' + hours + ' ' + hoursText;
+    }
+
+    
 
     const renderOrders = () => {
 
         ordersTable.textContent = '';
-
         orders.forEach((order, i) => {
 
-            ordersTable.innerHTML += `<tr class="order" data-order="${i}">
+            ordersTable.innerHTML += `<tr class="order ${order.active ? 'taken' : ''}" 
+            data-order="${i}">
                 <td>${i+1}</td>
                 <td>${order.title}</td>
                 <td class="${order.currency}"></td>
-                <td>${order.deadline}</td>
+                <td>${calcDeadline(order.deadline)}</td>
             </tr>`;
 
         })
-
-    }
+    };
 
     const handlerModal = (event) => {
         const target = event.target;
@@ -38,13 +60,29 @@ document.addEventListener('DOMContentLoaded', () => {
         const order = orders[modal.id]
         console.log(target)
 
+        const baseAction = () => {
+            modal.style.display = 'none';
+            toStorage();
+            renderOrders();
+        }
+
         if (target.closest('.close') || target === modal) {
             modal.style.display = 'none'
         }
 
         if(target.classList.contains('get-order')){
             order.active = true;
-            modal.style.display = 'none'
+            baseAction();
+        }
+
+        if(target.id === 'capitulation'){
+            order.active = false;
+            baseAction();
+        }
+
+        if(target.id === 'ready'){
+            orders.splice(orders.indexOf(order),1);
+            baseAction();
         }
 
         
@@ -79,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
         countBlock.textContent = amount;
         firstNameBlock.textContent = firstName;
         descriptionBlock.textContent = description;
-        deadlineBlock.textContent = deadline;
+        deadlineBlock.textContent = calcDeadline(deadline);
         currencyBlock.className = 'currency_img';
         currencyBlock.classList.add(currency);
 
@@ -149,7 +187,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });*/
 
-        //TODO: переписать через filter
         const filteredItems = [...formCustomer.elements]
             .filter((elem) => (elem.tagName === 'INPUT' && elem.type !== 'radio') ||
                 (elem.type === 'radio' && elem.checked) || 
@@ -159,11 +196,15 @@ document.addEventListener('DOMContentLoaded', () => {
             obj[elem.name] = elem.value;
         })
 
-        //TODO: ресет для формы после сохранения
-        
         orders.push(obj);
+        toStorage();
         formCustomer.reset();
     })
+
+    //TODO: вывести, сколько дней до конца дедлайна вместо даты, 
+    //просклонять дни дней, часы часов
+    //вынести в отдельную функцию
+
 
 
 })
